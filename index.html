@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HostelOS Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f2f7;
+  --card:#ffffff;
+  --primary:#3b5bdb;
+  --primary-light:#eef2ff;
+  --primary-hover:#2f4ac5;
+  --accent:#0ca678;
+  --danger:#f03e3e;
+  --warning:#f59f00;
+  --text:#1a1d2e;
+  --sub:#6c7293;
+  --border:#e4e8f0;
+  --shadow:0 2px 12px rgba(59,91,219,0.08);
+  --shadow-lg:0 8px 32px rgba(59,91,219,0.13);
+  --radius:12px;
+  --sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+button{font-family:'DM Sans',sans-serif;cursor:pointer;}
+input,select,textarea{font-family:'DM Sans',sans-serif;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+
+/* ───────── LOGIN ───────── */
+#loginPage{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#eef2ff 0%,#f0f7ff 50%,#f0fff4 100%);
+  position:relative;
+  overflow:hidden;
+}
+#loginPage::before{
+  content:'';
+  position:absolute;
+  width:600px;height:600px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(59,91,219,0.07) 0%,transparent 70%);
+  top:-100px;right:-100px;
+}
+#loginPage::after{
+  content:'';
+  position:absolute;
+  width:400px;height:400px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(12,166,120,0.07) 0%,transparent 70%);
+  bottom:-50px;left:-50px;
+}
+.login-card{
+  background:white;
+  border-radius:20px;
+  padding:44px 40px;
+  width:420px;
+  box-shadow:0 20px 60px rgba(59,91,219,0.13);
+  position:relative;
+  z-index:1;
+}
+.login-logo{
+  display:flex;align-items:center;gap:10px;margin-bottom:32px;
+}
+.login-logo-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:linear-gradient(135deg,var(--primary),#6f86e8);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:18px;font-weight:700;
+}
+.login-logo span{font-size:20px;font-weight:700;color:var(--text);}
+.login-card h2{font-size:24px;font-weight:700;margin-bottom:6px;}
+.login-card p{color:var(--sub);font-size:14px;margin-bottom:28px;}
+.field-group{margin-bottom:18px;}
+.field-group label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:7px;}
+.field-wrap{position:relative;}
+.field-wrap input{
+  width:100%;padding:12px 14px;
+  border:1.5px solid var(--border);
+  border-radius:10px;font-size:15px;
+  color:var(--text);background:white;
+  transition:border .2s,box-shadow .2s;
+  outline:none;
+}
+.field-wrap input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,91,219,0.12);}
+.toggle-pw{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--sub);font-size:17px;padding:0;
+  display:flex;align-items:center;
+}
+.btn-primary{
+  width:100%;padding:13px;
+  background:var(--primary);color:white;
+  border:none;border-radius:10px;
+  font-size:15px;font-weight:600;
+  transition:background .2s,transform .1s,box-shadow .2s;
+  box-shadow:0 4px 14px rgba(59,91,219,0.25);
+}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,91,219,0.3);}
+.btn-primary:active{transform:translateY(0);}
+.login-err{
+  background:#fff5f5;border:1px solid #ffc9c9;
+  color:var(--danger);border-radius:8px;
+  padding:10px 14px;font-size:13px;
+  margin-top:14px;display:none;
+}
+.back-btn{
+  background:none;border:none;color:var(--sub);
+  font-size:13px;margin-top:12px;display:flex;
+  align-items:center;gap:5px;padding:0;
+}
+.back-btn:hover{color:var(--primary);}
+
+/* ───────── APP LAYOUT ───────── */
+#appPage{display:none;min-height:100vh;flex-direction:row;}
+#appPage.active{display:flex;}
+
+.sidebar{
+  width:var(--sidebar);
+  background:white;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;
+  z-index:100;transition:transform .3s;
+}
+.sidebar-head{
+  padding:20px 18px 16px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-logo{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--primary),#6f86e8);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:14px;font-weight:700;flex-shrink:0;
+}
+.sidebar-title{font-size:16px;font-weight:700;}
+.sidebar-sub{font-size:11px;color:var(--sub);}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 10px;}
+.nav-section{font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;padding:8px 10px 4px;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:9px;
+  font-size:14px;font-weight:500;color:var(--sub);
+  cursor:pointer;transition:all .15s;margin-bottom:2px;
+}
+.nav-item:hover{background:var(--primary-light);color:var(--primary);}
+.nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600;}
+.nav-item .icon{font-size:17px;width:20px;text-align:center;}
+.nav-item.danger:hover{background:#fff5f5;color:var(--danger);}
+.sidebar-foot{
+  padding:14px 10px;
+  border-top:1px solid var(--border);
+}
+.user-badge{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:9px;
+  background:var(--bg);
+}
+.user-av{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#6f86e8);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:13px;font-weight:700;flex-shrink:0;
+}
+.user-name{font-size:13px;font-weight:600;line-height:1.2;}
+.user-role{font-size:11px;color:var(--sub);}
+
+/* MAIN */
+.main{
+  margin-left:var(--sidebar);
+  flex:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+.topbar{
+  background:white;
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.page-title{font-size:17px;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.hamburger{
+  display:none;background:none;border:none;
+  font-size:20px;color:var(--text);padding:4px;
+}
+.content{padding:28px;flex:1;}
+
+/* SECTION */
+.section{display:none;}
+.section.active{display:block;}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{
+  background:white;border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:16px;
+}
+.stat-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.stat-icon.blue{background:#eef2ff;color:var(--primary);}
+.stat-icon.green{background:#e6fff8;color:var(--accent);}
+.stat-icon.orange{background:#fff8e6;color:var(--warning);}
+.stat-icon.red{background:#fff5f5;color:var(--danger);}
+.stat-num{font-size:26px;font-weight:700;line-height:1;}
+.stat-lbl{font-size:13px;color:var(--sub);margin-top:3px;}
+
+/* CARDS */
+.card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px;}
+.card-head{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+}
+.card-head h3{font-size:15px;font-weight:700;}
+.card-body{padding:20px;}
+
+/* ACTIVITY */
+.activity-list{display:flex;flex-direction:column;gap:12px;}
+.act-item{display:flex;align-items:flex-start;gap:12px;}
+.act-dot{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.act-dot.blue{background:#eef2ff;}
+.act-dot.green{background:#e6fff8;}
+.act-dot.orange{background:#fff8e6;}
+.act-text{font-size:13px;font-weight:500;line-height:1.4;}
+.act-time{font-size:11px;color:var(--sub);margin-top:2px;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{
+  padding:11px 14px;text-align:left;
+  font-size:11px;font-weight:700;
+  color:var(--sub);letter-spacing:.05em;text-transform:uppercase;
+  background:#f8f9fc;border-bottom:1px solid var(--border);
+}
+td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8f9fc;}
+
+/* BADGES */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:99px;
+  font-size:11px;font-weight:600;
+}
+.badge.green{background:#e6fff8;color:#0b7a5a;}
+.badge.red{background:#fff5f5;color:#c92a2a;}
+.badge.orange{background:#fff8e6;color:#b87300;}
+.badge.blue{background:#eef2ff;color:var(--primary);}
+.badge.gray{background:#f1f3f9;color:#555;}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:8px;
+  font-size:13px;font-weight:600;border:none;
+  transition:all .15s;
+}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px;}
+.btn-blue{background:var(--primary);color:white;}
+.btn-blue:hover{background:var(--primary-hover);}
+.btn-ghost{background:var(--bg);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--border);}
+.btn-danger{background:#fff5f5;color:var(--danger);border:1px solid #ffd6d6;}
+.btn-danger:hover{background:var(--danger);color:white;}
+.btn-success{background:#e6fff8;color:#0b7a5a;border:1px solid #b2f2e0;}
+.btn-success:hover{background:var(--accent);color:white;}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:12px;font-weight:600;color:var(--sub);letter-spacing:.03em;text-transform:uppercase;}
+.form-group input,.form-group select{
+  padding:10px 12px;border:1.5px solid var(--border);
+  border-radius:9px;font-size:14px;color:var(--text);
+  outline:none;transition:border .15s,box-shadow .15s;background:white;
+}
+.form-group input:focus,.form-group select:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,91,219,0.1);
+}
+.form-actions{display:flex;gap:10px;margin-top:18px;}
+
+/* SEARCH */
+.search-wrap{position:relative;min-width:200px;}
+.search-wrap input{
+  padding:8px 12px 8px 34px;
+  border:1.5px solid var(--border);
+  border-radius:9px;font-size:13px;
+  outline:none;transition:border .15s;width:100%;background:white;
+}
+.search-wrap input:focus{border-color:var(--primary);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:14px;pointer-events:none;}
+
+/* INLINE EDIT */
+input.inline-edit{
+  padding:5px 8px;border:1.5px solid var(--border);
+  border-radius:7px;font-size:13px;
+  outline:none;width:100%;transition:border .15s;
+}
+input.inline-edit:focus{border-color:var(--primary);}
+
+/* PROFILE */
+.profile-header{
+  background:linear-gradient(135deg,var(--primary),#6f86e8);
+  border-radius:var(--radius);padding:30px;
+  color:white;margin-bottom:20px;
+  display:flex;align-items:center;gap:20px;
+}
+.profile-av{
+  width:70px;height:70px;border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;border:3px solid rgba(255,255,255,0.3);
+}
+.profile-name{font-size:22px;font-weight:700;}
+.profile-role{font-size:14px;opacity:.85;margin-top:3px;}
+
+/* EMPTY STATE */
+.empty{
+  text-align:center;padding:40px;color:var(--sub);
+}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+.empty p{font-size:14px;}
+
+/* MODAL OVERLAY */
+.modal-bg{
+  position:fixed;inset:0;
+  background:rgba(26,29,46,0.45);
+  display:flex;align-items:center;justify-content:center;
+  z-index:300;display:none;
+  backdrop-filter:blur(3px);
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:white;border-radius:16px;
+  padding:28px;width:500px;max-width:95vw;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  max-height:90vh;overflow-y:auto;
+}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:18px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--text);color:white;
+  padding:12px 18px;border-radius:10px;
+  font-size:13px;font-weight:500;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  animation:slideIn .25s ease;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.success{background:#0ca678;}
+.toast.error{background:var(--danger);}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .hamburger{display:block;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .content{padding:16px;}
+  .topbar{padding:0 16px;}
+  .form-grid{grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr;}
+  .login-card{width:95%;padding:28px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ LOGIN ═══════════════════════ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">H</div>
+      <span>HostelOS Pro</span>
+    </div>
+    <h2 id="loginTitle">Sign in</h2>
+    <p id="loginSub">Enter your username to continue</p>
+
+    <div id="stepUser">
+      <div class="field-group">
+        <label>Username</label>
+        <div class="field-wrap">
+          <input type="text" id="inUser" placeholder="e.g. admin" onkeydown="if(event.key==='Enter')loginNext()">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="loginNext()">Continue →</button>
+    </div>
+
+    <div id="stepPass" style="display:none;">
+      <div class="field-group">
+        <label>Password</label>
+        <div class="field-wrap">
+          <input type="password" id="inPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="toggle-pw" onclick="togglePw()" id="pwIcon">👁</button>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In</button>
+      <br>
+      <button class="back-btn" onclick="backToUser()">← Back</button>
+    </div>
+
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ APP ═══════════════════════ -->
+<div id="appPage">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-logo">H</div>
+      <div>
+        <div class="sidebar-title">HostelOS</div>
+        <div class="sidebar-sub">Pro Management</div>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" onclick="showSection('dash')" id="nav-dash">
+        <span class="icon">🏠</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showSection('students')" id="nav-students">
+        <span class="icon">🎓</span> Students
+      </div>
+      <div class="nav-item" onclick="showSection('rooms')" id="nav-rooms">
+        <span class="icon">🚪</span> Rooms
+      </div>
+      <div class="nav-item" onclick="showSection('fees')" id="nav-fees">
+        <span class="icon">💳</span> Fees
+      </div>
+      <div class="nav-section">Admin</div>
+      <div class="nav-item" id="nav-users" onclick="showSection('users')">
+        <span class="icon">👥</span> Users
+      </div>
+      <div class="nav-item" onclick="showSection('profile')" id="nav-profile">
+        <span class="icon">👤</span> Profile
+      </div>
+      <div class="nav-item danger" onclick="logout()">
+        <span class="icon">🚪</span> Logout
+      </div>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="user-badge">
+        <div class="user-av" id="sideAv">A</div>
+        <div>
+          <div class="user-name" id="sideName">Admin</div>
+          <div class="user-role" id="sideRole">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:12px;color:var(--sub);" id="topRole"></span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="section active" id="sec-dash">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">🎓</div>
+            <div><div class="stat-num" id="ds-students">0</div><div class="stat-lbl">Total Students</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">🚪</div>
+            <div><div class="stat-num" id="ds-rooms">0</div><div class="stat-lbl">Total Rooms</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">⏳</div>
+            <div><div class="stat-num" id="ds-pending">0</div><div class="stat-lbl">Pending Fees</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">💰</div>
+            <div><div class="stat-num" id="ds-revenue">₹0</div><div class="stat-lbl">Revenue</div></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap;">
+          <div class="card" style="grid-column:span 1;">
+            <div class="card-head"><h3>🏠 Rooms Overview</h3></div>
+            <div class="card-body">
+              <div id="roomsOverview"></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column:span 1;">
+            <div class="card-head"><h3>📋 Recent Activity</h3></div>
+            <div class="card-body">
+              <div class="activity-list" id="activityList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS ── -->
+      <div class="section" id="sec-users">
+        <div class="card">
+          <div class="card-head">
+            <h3>👥 User Management</h3>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+                <tbody id="userTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STUDENTS ── -->
+      <div class="section" id="sec-students">
+        <div class="card">
+          <div class="card-head">
+            <h3>🎓 Students</h3>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="studentSearch" placeholder="Search..." oninput="renderStudents()">
+              </div>
+              <button class="btn btn-blue" onclick="openModal('addStudent')">+ Add Student</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Room</th><th>Course</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="studentTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ROOMS ── -->
+      <div class="section" id="sec-rooms">
+        <div class="card">
+          <div class="card-head">
+            <h3>🚪 Rooms</h3>
+            <button class="btn btn-blue" onclick="openModal('addRoom')">+ Add Room</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Room No.</th><th>Type</th><th>Capacity</th><th>Rent (₹)</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="roomTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FEES ── -->
+      <div class="section" id="sec-fees">
+        <div class="card">
+          <div class="card-head">
+            <h3>💳 Fee Records</h3>
+            <button class="btn btn-blue" onclick="openModal('addFee')">+ Add Record</button>
+          </div>
+          <div class="card-body">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Student</th><th>Due (₹)</th><th>Paid (₹)</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="feeTbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROFILE ── -->
+      <div class="section" id="sec-profile">
+        <div class="profile-header">
+          <div class="profile-av" id="profAv">A</div>
+          <div>
+            <div class="profile-name" id="profName">Admin</div>
+            <div class="profile-role" id="profRole">Administrator</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>🔐 Change Password</h3></div>
+          <div class="card-body">
+            <div class="form-grid" style="max-width:500px;">
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="pwOld" placeholder="Current password">
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="pwNew" placeholder="New password">
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="pwConfirm" placeholder="Confirm new password">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-blue" onclick="changePassword()">Update Password</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /appPage -->
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+<!-- Add/Edit Student -->
+<div class="modal-bg" id="modal-addStudent">
+  <div class="modal">
+    <h3 id="studentModalTitle">Add Student</h3>
+    <input type="hidden" id="editStudentId">
+    <div class="form-grid">
+      <div class="form-group"><label>Name</label><input id="sName" placeholder="Full name"></div>
+      <div class="form-group"><label>Phone</label><input id="sPhone" placeholder="Phone number"></div>
+      <div class="form-group"><label>Room</label><input id="sRoom" placeholder="Room number"></div>
+      <div class="form-group"><label>Course</label><input id="sCourse" placeholder="Course / Branch"></div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="sStatus">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addStudent')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveStudent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Room -->
+<div class="modal-bg" id="modal-addRoom">
+  <div class="modal">
+    <h3 id="roomModalTitle">Add Room</h3>
+    <input type="hidden" id="editRoomId">
+    <div class="form-grid">
+      <div class="form-group"><label>Room Number</label><input id="rNum" placeholder="e.g. 101"></div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="rType">
+          <option>Single</option><option>Double</option><option>Triple</option><option>Dormitory</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Capacity</label><input id="rCap" type="number" placeholder="Max occupants" min="1"></div>
+      <div class="form-group"><label>Rent (₹/month)</label><input id="rRent" type="number" placeholder="Monthly rent"></div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="rStatus">
+          <option value="Available">Available</option>
+          <option value="Occupied">Occupied</option>
+          <option value="Maintenance">Maintenance</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addRoom')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveRoom()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Fee -->
+<div class="modal-bg" id="modal-addFee">
+  <div class="modal">
+    <h3 id="feeModalTitle">Add Fee Record</h3>
+    <input type="hidden" id="editFeeId">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Student</label>
+        <select id="fStudent"></select>
+      </div>
+      <div class="form-group"><label>Amount Due (₹)</label><input id="fDue" type="number" placeholder="0"></div>
+      <div class="form-group"><label>Amount Paid (₹)</label><input id="fPaid" type="number" placeholder="0"></div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="Paid">Paid</option>
+          <option value="Partial">Partial</option>
+          <option value="Pending">Pending</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addFee')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveFee()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+'use strict';
+
+/* ── DEFAULTS ── */
+const DEFAULT_USERS = [
+  {id:1, username:'admin',   password:'admin123',   role:'Admin'},
+  {id:2, username:'staff',   password:'staff123',   role:'Staff'},
+  {id:3, username:'student', password:'student123', role:'Student'}
+];
+const DEFAULT_STUDENTS = [
+  {id:1, name:'Rahul Sharma',  phone:'9876543210', room:'101', course:'B.Tech CSE', status:'Active'},
+  {id:2, name:'Priya Nair',    phone:'8765432109', room:'102', course:'B.Sc Math',  status:'Active'},
+  {id:3, name:'Arjun Mehta',   phone:'7654321098', room:'103', course:'MBA',        status:'Active'},
+];
+const DEFAULT_ROOMS = [
+  {id:1, num:'101', type:'Single',    cap:1, rent:4500,  status:'Occupied'},
+  {id:2, num:'102', type:'Double',    cap:2, rent:3500,  status:'Occupied'},
+  {id:3, num:'103', type:'Triple',    cap:3, rent:2800,  status:'Available'},
+  {id:4, num:'104', type:'Dormitory', cap:6, rent:1800,  status:'Available'},
+];
+const DEFAULT_FEES = [
+  {id:1, student:'Rahul Sharma',  due:5000, paid:5000, status:'Paid'},
+  {id:2, student:'Priya Nair',    due:5000, paid:2500, status:'Partial'},
+  {id:3, student:'Arjun Mehta',   due:5000, paid:0,    status:'Pending'},
+];
+
+/* ── STATE ── */
+let S = {
+  users:    lsGet('users',    DEFAULT_USERS),
+  students: lsGet('students', DEFAULT_STUDENTS),
+  rooms:    lsGet('rooms',    DEFAULT_ROOMS),
+  fees:     lsGet('fees',     DEFAULT_FEES),
+  current:  null,
+  activity: lsGet('activity', [
+    {icon:'🎓', text:'Rahul Sharma checked in', time:'Today 9:00 AM', cls:'blue'},
+    {icon:'💳', text:'Priya Nair paid ₹2500',   time:'Today 10:30 AM', cls:'green'},
+    {icon:'🚪', text:'Room 103 marked available', time:'Yesterday',   cls:'orange'},
+  ])
+};
+
+/* ── LS HELPERS ── */
+function lsGet(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function lsSave(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+function save(){ lsSave('users',S.users); lsSave('students',S.students); lsSave('rooms',S.rooms); lsSave('fees',S.fees); lsSave('activity',S.activity); }
+
+/* ── TOAST ── */
+function toast(msg, type='success'){
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = (type==='success'?'✅':'❌') + ' ' + msg;
+  w.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2800);
+}
+
+/* ── ID GEN ── */
+function nextId(arr){ return arr.length ? Math.max(...arr.map(x=>x.id))+1 : 1; }
+
+/* ── LOGIN ── */
+let _loginStep = 1;
+function loginNext(){
+  const u = document.getElementById('inUser').value.trim();
+  if(!u){ showErr('Please enter a username'); return; }
+  if(!S.users.find(x=>x.username===u)){ showErr('Username not found'); return; }
+  document.getElementById('stepUser').style.display='none';
+  document.getElementById('stepPass').style.display='block';
+  document.getElementById('loginTitle').textContent='Welcome back!';
+  document.getElementById('loginSub').textContent='Enter your password to continue';
+  document.getElementById('inPass').focus();
+  _loginStep=2;
+}
+function backToUser(){
+  document.getElementById('stepUser').style.display='block';
+  document.getElementById('stepPass').style.display='none';
+  document.getElementById('loginTitle').textContent='Sign in';
+  document.getElementById('loginSub').textContent='Enter your username to continue';
+  document.getElementById('loginErr').style.display='none';
+  _loginStep=1;
+}
+function doLogin(){
+  const u = document.getElementById('inUser').value.trim();
+  const p = document.getElementById('inPass').value;
+  const user = S.users.find(x=>x.username===u && x.password===p);
+  if(!user){ showErr('Incorrect password'); return; }
+  S.current = user;
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('appPage').classList.add('active');
+  initApp();
+}
+function showErr(msg){
+  const el = document.getElementById('loginErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function togglePw(){
+  const inp = document.getElementById('inPass');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  document.getElementById('pwIcon').textContent = inp.type==='password' ? '👁' : '🙈';
+}
+function logout(){ localStorage.removeItem('session'); location.reload(); }
+
+/* ── INIT ── */
+function initApp(){
+  const u = S.current;
+  document.getElementById('sideAv').textContent   = u.username[0].toUpperCase();
+  document.getElementById('sideName').textContent  = u.username;
+  document.getElementById('sideRole').textContent  = u.role;
+  document.getElementById('topRole').textContent   = u.role;
+  document.getElementById('profAv').textContent    = u.username[0].toUpperCase();
+  document.getElementById('profName').textContent  = u.username;
+  document.getElementById('profRole').textContent  = u.role;
+  // hide users nav for non-admin
+  if(u.role!=='Admin') document.getElementById('nav-users').style.display='none';
+  renderAll();
+  showSection('dash');
+}
+
+/* ── NAV ── */
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  const nav = document.getElementById('nav-'+id);
+  if(nav) nav.classList.add('active');
+  const titles={dash:'Dashboard',users:'User Management',students:'Students',rooms:'Rooms',fees:'Fees',profile:'Profile'};
+  document.getElementById('pageTitle').textContent = titles[id]||id;
+  document.getElementById('sidebar').classList.remove('open');
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+document.addEventListener('click', e=>{
+  const sb = document.getElementById('sidebar');
+  if(sb && !sb.contains(e.target) && !e.target.classList.contains('hamburger')){
+    sb.classList.remove('open');
+  }
+});
+
+/* ── RENDER ALL ── */
+function renderAll(){ renderDash(); renderUsers(); renderStudents(); renderRooms(); renderFees(); }
+
+/* ── DASHBOARD ── */
+function renderDash(){
+  const pending = S.fees.filter(f=>f.status!=='Paid').length;
+  const revenue = S.fees.reduce((a,f)=>a+Number(f.paid),0);
+  document.getElementById('ds-students').textContent = S.students.length;
+  document.getElementById('ds-rooms').textContent    = S.rooms.length;
+  document.getElementById('ds-pending').textContent  = pending;
+  document.getElementById('ds-revenue').textContent  = '₹'+revenue.toLocaleString('en-IN');
+
+  // rooms overview
+  const avail = S.rooms.filter(r=>r.status==='Available').length;
+  const occ   = S.rooms.filter(r=>r.status==='Occupied').length;
+  const maint = S.rooms.filter(r=>r.status==='Maintenance').length;
+  document.getElementById('roomsOverview').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--sub);">Available</span>
+        <span class="badge green">${avail}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--sub);">Occupied</span>
+        <span class="badge blue">${occ}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--sub);">Maintenance</span>
+        <span class="badge orange">${maint}</span>
+      </div>
+      <div style="margin-top:8px;background:var(--bg);border-radius:99px;height:8px;overflow:hidden;">
+        <div style="height:100%;width:${S.rooms.length?Math.round(occ/S.rooms.length*100):0}%;background:var(--primary);border-radius:99px;transition:width .5s;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--sub);text-align:right;">${S.rooms.length?Math.round(occ/S.rooms.length*100):0}% occupancy</div>
+    </div>`;
+
+  // activity
+  const actEl = document.getElementById('activityList');
+  if(!S.activity.length){ actEl.innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>No recent activity</p></div>'; return; }
+  actEl.innerHTML = S.activity.slice(-5).reverse().map(a=>`
+    <div class="act-item">
+      <div class="act-dot ${a.cls||'blue'}">${a.icon}</div>
+      <div><div class="act-text">${a.text}</div><div class="act-time">${a.time}</div></div>
+    </div>`).join('');
+}
+
+/* ── USERS ── */
+function renderUsers(){
+  const tbody = document.getElementById('userTbody');
+  if(!tbody) return;
+  tbody.innerHTML = S.users.map((u,i)=>`
+    <tr>
+      <td style="color:var(--sub);font-size:12px;">${i+1}</td>
+      <td>
+        ${S.current.role==='Admin' && u.role!=='Admin'
+          ? `<input class="inline-edit" value="${esc(u.username)}" onchange="editUsername(${u.id},this.value)">`
+          : `<b>${esc(u.username)}</b>`}
+      </td>
+      <td><span class="badge ${u.role==='Admin'?'blue':u.role==='Staff'?'orange':'green'}">${u.role}</span></td>
+      <td>
+        ${S.current.role==='Admin' && u.role!=='Admin'
+          ? `<button class="btn btn-sm btn-danger" onclick="delUser(${u.id})">🗑 Delete</button>`
+          : `<span style="color:var(--sub);font-size:12px;">—</span>`}
+      </td>
+    </tr>`).join('');
+}
+function editUsername(id, val){
+  if(S.current.role!=='Admin'){ toast('Admins only','error'); renderUsers(); return; }
+  if(!val.trim()){ toast('Username cannot be empty','error'); renderUsers(); return; }
+  S.users.find(x=>x.id===id).username=val.trim();
+  save(); toast('Username updated');
+}
+function delUser(id){
+  if(!confirm('Delete this user?')) return;
+  S.users = S.users.filter(x=>x.id!==id);
+  save(); renderUsers(); toast('User deleted');
+}
+
+/* ── STUDENTS ── */
+function renderStudents(){
+  const q = (document.getElementById('studentSearch')?.value||'').toLowerCase();
+  const list = S.students.filter(s=>
+    s.name.toLowerCase().includes(q)||
+    s.phone.includes(q)||
+    s.room.includes(q)||
+    s.course.toLowerCase().includes(q)
+  );
+  const tbody = document.getElementById('studentTbody');
+  if(!list.length){ tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">🎓</div><p>No students found</p></div></td></tr>`; return; }
+  tbody.innerHTML = list.map((s,i)=>`
+    <tr>
+      <td style="color:var(--sub);font-size:12px;">${i+1}</td>
+      <td><b>${esc(s.name)}</b></td>
+      <td>${esc(s.phone)}</td>
+      <td>${esc(s.room)}</td>
+      <td>${esc(s.course)}</td>
+      <td><span class="badge ${s.status==='Active'?'green':'gray'}">${s.status}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-ghost" onclick="editStudent(${s.id})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="delStudent(${s.id})">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+function editStudent(id){
+  const s = S.students.find(x=>x.id===id);
+  document.getElementById('studentModalTitle').textContent='Edit Student';
+  document.getElementById('editStudentId').value=id;
+  document.getElementById('sName').value=s.name;
+  document.getElementById('sPhone').value=s.phone;
+  document.getElementById('sRoom').value=s.room;
+  document.getElementById('sCourse').value=s.course;
+  document.getElementById('sStatus').value=s.status;
+  openModal('addStudent');
+}
+function saveStudent(){
+  const id   = document.getElementById('editStudentId').value;
+  const name = document.getElementById('sName').value.trim();
+  if(!name){ toast('Name is required','error'); return; }
+  const obj = {
+    name, phone: document.getElementById('sPhone').value.trim(),
+    room: document.getElementById('sRoom').value.trim(),
+    course: document.getElementById('sCourse').value.trim(),
+    status: document.getElementById('sStatus').value
+  };
+  if(id){
+    Object.assign(S.students.find(x=>x.id==id), obj);
+    addActivity('✏️',`${name} record updated`,'blue');
+    toast('Student updated');
+  } else {
+    S.students.push({id:nextId(S.students),...obj});
+    addActivity('🎓',`${name} added as student`,'blue');
+    toast('Student added');
+  }
+  save(); renderStudents(); renderDash(); closeModal('addStudent');
+}
+function delStudent(id){
+  if(!confirm('Delete this student?')) return;
+  const s = S.students.find(x=>x.id===id);
+  S.students = S.students.filter(x=>x.id!==id);
+  addActivity('🗑',`${s.name} removed`,'orange');
+  save(); renderStudents(); renderDash(); toast('Student deleted');
+}
+
+/* ── ROOMS ── */
+function renderRooms(){
+  const tbody = document.getElementById('roomTbody');
+  if(!S.rooms.length){ tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">🚪</div><p>No rooms added</p></div></td></tr>`; return; }
+  tbody.innerHTML = S.rooms.map((r,i)=>`
+    <tr>
+      <td style="color:var(--sub);font-size:12px;">${i+1}</td>
+      <td><b>${esc(r.num)}</b></td>
+      <td>${esc(r.type)}</td>
+      <td>${r.cap}</td>
+      <td>₹${Number(r.rent).toLocaleString('en-IN')}</td>
+      <td><span class="badge ${r.status==='Available'?'green':r.status==='Occupied'?'blue':'orange'}">${r.status}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-ghost" onclick="editRoom(${r.id})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="delRoom(${r.id})">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+function editRoom(id){
+  const r = S.rooms.find(x=>x.id===id);
+  document.getElementById('roomModalTitle').textContent='Edit Room';
+  document.getElementById('editRoomId').value=id;
+  document.getElementById('rNum').value=r.num;
+  document.getElementById('rType').value=r.type;
+  document.getElementById('rCap').value=r.cap;
+  document.getElementById('rRent').value=r.rent;
+  document.getElementById('rStatus').value=r.status;
+  openModal('addRoom');
+}
+function saveRoom(){
+  const id   = document.getElementById('editRoomId').value;
+  const num  = document.getElementById('rNum').value.trim();
+  if(!num){ toast('Room number is required','error'); return; }
+  const obj = {
+    num, type: document.getElementById('rType').value,
+    cap: Number(document.getElementById('rCap').value)||1,
+    rent: Number(document.getElementById('rRent').value)||0,
+    status: document.getElementById('rStatus').value
+  };
+  if(id){
+    Object.assign(S.rooms.find(x=>x.id==id), obj);
+    addActivity('🚪',`Room ${num} updated`,'orange');
+    toast('Room updated');
+  } else {
+    S.rooms.push({id:nextId(S.rooms),...obj});
+    addActivity('🚪',`Room ${num} added`,'green');
+    toast('Room added');
+  }
+  save(); renderRooms(); renderDash(); closeModal('addRoom');
+}
+function delRoom(id){
+  if(!confirm('Delete this room?')) return;
+  const r = S.rooms.find(x=>x.id===id);
+  S.rooms = S.rooms.filter(x=>x.id!==id);
+  save(); renderRooms(); renderDash(); toast('Room deleted');
+}
+
+/* ── FEES ── */
+function renderFees(){
+  const tbody = document.getElementById('feeTbody');
+  if(!S.fees.length){ tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">💳</div><p>No fee records</p></div></td></tr>`; return; }
+  tbody.innerHTML = S.fees.map((f,i)=>`
+    <tr>
+      <td style="color:var(--sub);font-size:12px;">${i+1}</td>
+      <td><b>${esc(f.student)}</b></td>
+      <td>₹${Number(f.due).toLocaleString('en-IN')}</td>
+      <td>₹${Number(f.paid).toLocaleString('en-IN')}</td>
+      <td style="color:${f.due-f.paid>0?'var(--danger)':'var(--accent)'};">₹${(Number(f.due)-Number(f.paid)).toLocaleString('en-IN')}</td>
+      <td><span class="badge ${f.status==='Paid'?'green':f.status==='Partial'?'orange':'red'}">${f.status}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-ghost" onclick="editFee(${f.id})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="delFee(${f.id})">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+function populateFeeStudentSelect(sel){
+  sel.innerHTML = S.students.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+}
+function editFee(id){
+  const f = S.fees.find(x=>x.id===id);
+  document.getElementById('feeModalTitle').textContent='Edit Fee Record';
+  document.getElementById('editFeeId').value=id;
+  populateFeeStudentSelect(document.getElementById('fStudent'));
+  document.getElementById('fStudent').value=f.student;
+  document.getElementById('fDue').value=f.due;
+  document.getElementById('fPaid').value=f.paid;
+  document.getElementById('fStatus').value=f.status;
+  openModal('addFee');
+}
+function saveFee(){
+  const id  = document.getElementById('editFeeId').value;
+  const student = document.getElementById('fStudent').value;
+  const due  = Number(document.getElementById('fDue').value)||0;
+  const paid = Number(document.getElementById('fPaid').value)||0;
+  const status = document.getElementById('fStatus').value;
+  const obj = { student, due, paid, status };
+  if(id){
+    Object.assign(S.fees.find(x=>x.id==id), obj);
+    addActivity('💳',`Fee record updated for ${student}`,'green');
+    toast('Fee record updated');
+  } else {
+    S.fees.push({id:nextId(S.fees),...obj});
+    addActivity('💳',`Fee record added for ${student}`,'green');
+    toast('Fee record added');
+  }
+  save(); renderFees(); renderDash(); closeModal('addFee');
+}
+function delFee(id){
+  if(!confirm('Delete this fee record?')) return;
+  S.fees = S.fees.filter(x=>x.id!==id);
+  save(); renderFees(); renderDash(); toast('Fee record deleted');
+}
+
+/* ── PROFILE ── */
+function changePassword(){
+  const old  = document.getElementById('pwOld').value;
+  const nw   = document.getElementById('pwNew').value;
+  const conf = document.getElementById('pwConfirm').value;
+  const u    = S.users.find(x=>x.id===S.current.id);
+  if(!old||!nw||!conf){ toast('Fill all fields','error'); return; }
+  if(u.password!==old){ toast('Current password incorrect','error'); return; }
+  if(nw!==conf){ toast('New passwords do not match','error'); return; }
+  if(nw.length<6){ toast('Password must be at least 6 characters','error'); return; }
+  u.password=nw;
+  S.current.password=nw;
+  save();
+  document.getElementById('pwOld').value='';
+  document.getElementById('pwNew').value='';
+  document.getElementById('pwConfirm').value='';
+  toast('Password updated successfully');
+}
+
+/* ── MODALS ── */
+function openModal(id){
+  if(id==='addStudent'){
+    const isEdit = !!document.getElementById('editStudentId').value;
+    if(!isEdit){
+      document.getElementById('studentModalTitle').textContent='Add Student';
+      document.getElementById('editStudentId').value='';
+      ['sName','sPhone','sRoom','sCourse'].forEach(k=>document.getElementById(k).value='');
+      document.getElementById('sStatus').value='Active';
+    }
+  }
+  if(id==='addRoom'){
+    const isEdit = !!document.getElementById('editRoomId').value;
+    if(!isEdit){
+      document.getElementById('roomModalTitle').textContent='Add Room';
+      document.getElementById('editRoomId').value='';
+      ['rNum','rCap','rRent'].forEach(k=>document.getElementById(k).value='');
+    }
+  }
+  if(id==='addFee'){
+    const isEdit = !!document.getElementById('editFeeId').value;
+    populateFeeStudentSelect(document.getElementById('fStudent'));
+    if(!isEdit){
+      document.getElementById('feeModalTitle').textContent='Add Fee Record';
+      document.getElementById('editFeeId').value='';
+      document.getElementById('fDue').value='';
+      document.getElementById('fPaid').value='';
+      document.getElementById('fStatus').value='Pending';
+    }
+  }
+  document.getElementById('modal-'+id).classList.add('open');
+}
+function closeModal(id){
+  document.getElementById('modal-'+id).classList.remove('open');
+  // clear edit ids
+  if(id==='addStudent') document.getElementById('editStudentId').value='';
+  if(id==='addRoom')    document.getElementById('editRoomId').value='';
+  if(id==='addFee')     document.getElementById('editFeeId').value='';
+}
+// close modal on bg click
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('click', e=>{ if(e.target===bg){ const id=bg.id.replace('modal-',''); closeModal(id); } });
+});
+
+/* ── ACTIVITY ── */
+function addActivity(icon, text, cls){
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' today';
+  S.activity.push({icon, text, time, cls});
+  if(S.activity.length>20) S.activity=S.activity.slice(-20);
+}
+
+/* ── UTILS ── */
+function esc(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
