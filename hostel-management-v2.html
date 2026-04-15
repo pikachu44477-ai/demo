@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HostelOS — Role-Based Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0f14; --surface:#151820; --surface2:#1c2030; --surface3:#222840;
+  --border:#252b3b; --border2:#2f3650;
+  --accent:#6c63ff; --accent-h:#7d75ff;
+  --green:#43e97b; --red:#ff6584; --yellow:#f9ca24; --blue:#38bdf8;
+  --text:#e8ecf4; --muted:#7a8299; --muted2:#4a5068;
+  --sidebar-w:250px; --radius:14px; --radius-sm:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ══ LOGIN ══ */
+#login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+  background: radial-gradient(ellipse at 30% 20%, rgba(108,99,255,.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(255,101,132,.08) 0%, transparent 50%),
+              var(--bg);
+}
+.login-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:40px;width:420px;max-width:96vw;
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+}
+.login-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--red));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:30px}
+.login-roles{display:flex;gap:8px;margin-bottom:22px}
+.role-tab{
+  flex:1;padding:9px;border-radius:9px;font-size:13px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);text-align:center;
+  transition:all .15s;
+}
+.role-tab.active{background:rgba(108,99,255,.18);color:var(--accent);border-color:var(--accent)}
+.login-demo{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:9px;padding:10px 14px;margin-bottom:20px;
+  font-size:12px;color:var(--muted);line-height:1.8
+}
+.login-demo strong{color:var(--text)}
+.frow{margin-bottom:14px}
+.frow label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+.frow input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:14px;outline:none;
+  transition:border-color .15s;
+}
+.frow input:focus{border-color:var(--accent)}
+.login-err{color:var(--red);font-size:13px;margin-bottom:10px;display:none}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 20px;border-radius:var(--radius-sm);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-primary{background:var(--accent);color:#fff;width:100%;justify-content:center}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-1px)}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);background:var(--surface3)}
+.btn-danger{background:rgba(255,101,132,.12);color:var(--red);border:1px solid rgba(255,101,132,.25)}
+.btn-danger:hover{background:rgba(255,101,132,.22)}
+.btn-warn{background:rgba(249,202,36,.1);color:var(--yellow);border:1px solid rgba(249,202,36,.25)}
+.btn-success{background:rgba(67,233,123,.1);color:var(--green);border:1px solid rgba(67,233,123,.25)}
+
+/* ══ APP SHELL ══ */
+#app{display:none;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar-w);background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;
+  z-index:100;transition:transform .3s;
+}
+.s-logo{padding:26px 22px 22px;border-bottom:1px solid var(--border)}
+.s-logomark{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--red));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.s-logosub{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
+
+/* role pill */
+.role-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  margin:14px 22px 0;padding:5px 12px;
+  border-radius:20px;font-size:11px;font-weight:500;
+  border:1px solid;
+}
+.rp-admin{background:rgba(108,99,255,.12);color:var(--accent);border-color:rgba(108,99,255,.3)}
+.rp-staff{background:rgba(56,189,248,.12);color:var(--blue);border-color:rgba(56,189,248,.3)}
+.rp-student{background:rgba(67,233,123,.12);color:var(--green);border-color:rgba(67,233,123,.3)}
+
+.s-nav{padding:18px 12px;flex:1;overflow-y:auto}
+.s-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);padding:0 10px;margin:16px 0 6px}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  padding:9px 12px;border-radius:10px;cursor:pointer;
+  font-size:13.5px;font-weight:500;color:var(--muted);
+  transition:all .15s;margin-bottom:2px;position:relative;
+}
+.nav-item .ni{font-size:17px;width:20px;text-align:center}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(108,99,255,.14);color:var(--accent)}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:18%;bottom:18%;
+  width:3px;background:var(--accent);border-radius:0 3px 3px 0;
+}
+.nav-item.locked{opacity:.35;cursor:not-allowed;pointer-events:none}
+
+.s-footer{padding:14px;border-top:1px solid var(--border)}
+.user-chip{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);padding:10px 12px;border-radius:10px;
+}
+.ava{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:#fff;flex-shrink:0;
+}
+.ava-admin{background:linear-gradient(135deg,var(--accent),var(--red))}
+.ava-staff{background:linear-gradient(135deg,var(--blue),var(--accent))}
+.ava-student{background:linear-gradient(135deg,var(--green),var(--blue))}
+.uc-name{font-size:13px;font-weight:500;color:var(--text)}
+.uc-role{font-size:11px;color:var(--muted);text-transform:capitalize}
+.logout-btn{
+  margin-left:auto;padding:5px 8px;background:transparent;border:none;
+  color:var(--muted);cursor:pointer;font-size:15px;border-radius:6px;
+  transition:background .15s;
+}
+.logout-btn:hover{background:var(--surface3);color:var(--red)}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column}
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 28px;height:62px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.page-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.search-box{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:8px 14px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
+  width:200px;transition:border-color .15s;
+}
+.search-box:focus{border-color:var(--accent)}
+.search-box::placeholder{color:var(--muted)}
+.content{padding:26px 28px;flex:1}
+.section{display:none}
+.section.active{display:block;animation:fadeUp .3s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ CARDS ══ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.card-cnt{font-size:11px;color:var(--muted);background:var(--surface2);padding:2px 9px;border-radius:20px;margin-left:8px}
+
+/* ══ STATS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  position:relative;overflow:hidden;transition:transform .2s,border-color .2s;
+}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.stat-icon{font-size:20px;width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.s1 .stat-icon{background:rgba(108,99,255,.14)}
+.s2 .stat-icon{background:rgba(67,233,123,.14)}
+.s3 .stat-icon{background:rgba(255,101,132,.14)}
+.s4 .stat-icon{background:rgba(249,202,36,.14)}
+.s5 .stat-icon{background:rgba(56,189,248,.14)}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.stat-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;line-height:1}
+
+/* ══ TABLE ══ */
+table{width:100%;border-collapse:collapse}
+thead th{
+  text-align:left;font-size:11px;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--muted);font-weight:500;
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  background:var(--surface2);
+}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.024)}
+tbody td{padding:12px 20px;font-size:13.5px;border-bottom:1px solid rgba(255,255,255,.04)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ══ BADGES ══ */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.bg-green{background:rgba(67,233,123,.12);color:var(--green)}
+.bg-red{background:rgba(255,101,132,.12);color:var(--red)}
+.bg-yellow{background:rgba(249,202,36,.12);color:var(--yellow)}
+.bg-blue{background:rgba(56,189,248,.12);color:var(--blue)}
+.bg-purple{background:rgba(108,99,255,.12);color:var(--accent)}
+.bg-gray{background:rgba(122,130,153,.12);color:var(--muted)}
+
+/* ══ ACTION BTNS ══ */
+.abx{display:flex;gap:5px}
+.ab{padding:4px 10px;border-radius:6px;font-size:11.5px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.ab-edit{background:rgba(108,99,255,.14);color:var(--accent)}
+.ab-edit:hover{background:rgba(108,99,255,.28)}
+.ab-del{background:rgba(255,101,132,.1);color:var(--red)}
+.ab-del:hover{background:rgba(255,101,132,.24)}
+.ab-view{background:rgba(56,189,248,.1);color:var(--blue)}
+.ab-view:hover{background:rgba(56,189,248,.2)}
+.ab-status{background:rgba(249,202,36,.1);color:var(--yellow)}
+.ab-status:hover{background:rgba(249,202,36,.2)}
+
+/* ══ MODAL ══ */
+.modal-ov{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);
+  backdrop-filter:blur(5px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.modal-ov.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:18px;padding:28px;width:500px;
+  max-width:96vw;max-height:90vh;overflow-y:auto;
+  transform:scale(.95);transition:transform .2s;
+}
+.modal-ov.open .modal{transform:scale(1)}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:20px}
+.frow{margin-bottom:13px}
+.frow label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.frow input,.frow select,.frow textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s;
+}
+.frow input:focus,.frow select:focus,.frow textarea:focus{border-color:var(--accent)}
+.frow select option{background:var(--surface2)}
+.frow textarea{resize:vertical;min-height:70px}
+.form-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.readonly-field{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;
+  color:var(--muted);cursor:not-allowed;
+}
+.info-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.info-val{font-size:14px;color:var(--text);margin-bottom:12px}
+
+/* ══ PROFILE CARD ══ */
+.profile-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:28px;max-width:560px;
+}
+.pc-header{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+.pc-ava{
+  width:68px;height:68px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.pc-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.pc-role{font-size:13px;color:var(--muted);margin-top:2px;text-transform:capitalize}
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pc-field{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.pc-flabel{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.pc-fval{font-size:14px;font-weight:500}
+
+/* ══ GRID2 ══ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* ══ NOTICE ══ */
+.notice{
+  border-radius:10px;padding:11px 15px;font-size:13px;
+  display:flex;align-items:center;gap:10px;margin-bottom:18px;border:1px solid;
+}
+.notice-warn{background:rgba(249,202,36,.08);border-color:rgba(249,202,36,.25);color:var(--yellow)}
+.notice-info{background:rgba(56,189,248,.08);border-color:rgba(56,189,248,.25);color:var(--blue)}
+.notice-success{background:rgba(67,233,123,.08);border-color:rgba(67,233,123,.25);color:var(--green)}
+
+/* ══ EMPTY ══ */
+.empty{padding:44px 20px;text-align:center;color:var(--muted)}
+.empty .ei{font-size:38px;margin-bottom:10px;opacity:.35}
+.empty p{font-size:13.5px}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:11px;padding:12px 16px;font-size:13px;
+  display:flex;align-items:center;gap:9px;
+  box-shadow:0 8px 32px rgba(0,0,0,.45);
+  transform:translateY(90px);opacity:0;transition:all .3s;
+  z-index:9999;min-width:220px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.tdot{width:7px;height:7px;border-radius:50%}
+
+/* ══ HAMBURGER ══ */
+.ham{display:none;background:none;border:none;color:var(--text);font-size:21px;cursor:pointer}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sb-overlay.show{display:block}
+
+/* ══ ACCOUNT TABLE ══ */
+.acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.acc-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;transition:border-color .15s;
+}
+.acc-card:hover{border-color:var(--border2)}
+.acc-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.acc-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.acc-name{font-size:15px;font-weight:500}
+.acc-email{font-size:12px;color:var(--muted);margin-top:1px}
+.acc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.acc-actions{display:flex;gap:7px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:860px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .ham{display:block}
+  .content{padding:16px}
+  .topbar{padding:0 14px}
+  .grid2{grid-template-columns:1fr}
+  .form-2{grid-template-columns:1fr}
+  .pc-grid{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:500px){
+  .stats-grid{grid-template-columns:1fr}
+  .login-roles{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">HostelOS</div>
+    <div class="login-sub">Hostel Management System — Secure Login</div>
+
+    <div class="login-roles">
+      <div class="role-tab active" onclick="selectRole('admin',this)">🔑 Admin</div>
+      <div class="role-tab" onclick="selectRole('staff',this)">👔 Staff</div>
+      <div class="role-tab" onclick="selectRole('student',this)">🎓 Student</div>
+    </div>
+
+    <div class="login-demo" id="login-demo">
+      <strong>Demo — Admin:</strong> admin@hostel.com / admin123
+    </div>
+
+    <div class="frow"><label>Email</label><input type="email" id="l-email" placeholder="you@hostel.com" /></div>
+    <div class="frow"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+    <div class="login-err" id="l-err">❌ Invalid credentials. Try again.</div>
+    <button class="btn btn-primary" onclick="doLogin()">Sign In →</button>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <div class="shell">
+    <!-- SIDEBAR -->
+    <div class="sb-overlay" id="sb-ov" onclick="closeSB()"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="s-logo">
+        <div class="s-logomark">HostelOS</div>
+        <div class="s-logosub">Management System</div>
+      </div>
+      <div class="role-pill" id="role-pill"></div>
+      <nav class="s-nav" id="s-nav"></nav>
+      <div class="s-footer">
+        <div class="user-chip">
+          <div class="ava" id="user-ava"></div>
+          <div>
+            <div class="uc-name" id="user-name-chip">—</div>
+            <div class="uc-role" id="user-role-chip">—</div>
+          </div>
+          <button class="logout-btn" onclick="doLogout()" title="Sign out">⏏</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="ham" onclick="openSB()">☰</button>
+          <span class="page-title" id="page-title">Dashboard</span>
+        </div>
+        <div class="topbar-r">
+          <input class="search-box" type="text" placeholder="🔍 Search…" id="g-search" oninput="refresh()" />
+        </div>
+      </header>
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <section class="section" id="sec-dashboard">
+          <div class="stats-grid" id="dash-stats"></div>
+          <div class="grid2" id="dash-tables"></div>
+        </section>
+
+        <!-- ACCOUNTS (admin only) -->
+        <section class="section" id="sec-accounts">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700">User Accounts</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px">Create and manage staff & student accounts</div>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('account')">＋ New Account</button>
+          </div>
+          <div class="notice notice-info">🔐 Only Admin can create, edit, or delete accounts. Passwords are stored for demo purposes only.</div>
+          <div class="acc-grid" id="acc-grid"></div>
+          <div id="acc-empty" class="empty" style="display:none"><div class="ei">👥</div><p>No accounts yet.</p></div>
+        </section>
+
+        <!-- STUDENTS -->
+        <section class="section" id="sec-students">
+          <div class="card">
+            <div class="card-header">
+              <div style="display:flex;align-items:center">
+                <span class="card-title">Students</span>
+                <span class="card-cnt" id="student-cnt">0</span>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btn-add-student" onclick="openModal('student')" style="display:none">＋ Add Student</button>
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Room</th><th>Joined</th><th>Fee Status</th><th>Actions</th></tr></thead>
+              <tbody id="student-table"></tbody>
+            </table>
+            <div id="student-empty" class="empty" style="display:none"><div class="ei">🎓</div><p>No students found.</p></div>
+          </div>
+        </section>
+
+        <!-- ROOMS -->
+        <section class="section" id="sec-rooms">
+          <div class="card">
+            <div class="card-header">
+              <div style="display:flex;align-items:center">
+                <span class="card-title">Rooms</span>
+                <span class="card-cnt" id="room-cnt">0</span>
+              </div>
+              <button class="btn btn-primary btn-sm" id="btn-add-room" onclick="openModal('room')" style="display:none">＋ Add Room</button>
+            </div>
+            <table>
+              <thead><tr><th>Room No.</th><th>Type</th><th>Floor</th><th>Capacity</th><th>Occupants</th><th>Rent/mo</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="room-table"></tbody>
+            </table>
+            <div id="room-empty" class="empty" style="display:none"><div class="ei">🛏️</div><p>No rooms found.</p></div>
+          </div>
+        </section>
+
+        <!-- FEES -->
+        <section class="section" id="sec-fees">
+          <div class="grid2" style="margin-bottom:18px" id="fee-summary"></div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Fee Records</span>
+              <button class="btn btn-primary btn-sm" id="btn-add-fee" onclick="openModal('fee')" style="display:none">＋ Add Fee</button>
+            </div>
+            <table>
+              <thead><tr><th>Student</th><th>Room</th><th>Amount</th><th>Month</th><th>Date Paid</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="fee-table"></tbody>
+            </table>
+            <div id="fee-empty" class="empty" style="display:none"><div class="ei">💳</div><p>No fee records.</p></div>
+          </div>
+        </section>
+
+        <!-- MY PROFILE (student / staff) -->
+        <section class="section" id="sec-profile">
+          <div id="profile-content"></div>
+        </section>
+
+        <!-- STAFF (admin view) -->
+        <section class="section" id="sec-staff">
+          <div class="card">
+            <div class="card-header">
+              <div style="display:flex;align-items:center">
+                <span class="card-title">Staff Members</span>
+                <span class="card-cnt" id="staff-cnt">0</span>
+              </div>
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Department</th><th>Status</th></tr></thead>
+              <tbody id="staff-table"></tbody>
+            </table>
+            <div id="staff-empty" class="empty" style="display:none"><div class="ei">👔</div><p>No staff found.</p></div>
+          </div>
+        </section>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /shell -->
+</div><!-- /app -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- Account Modal -->
+<div class="modal-ov" id="modal-account">
+  <div class="modal">
+    <div class="modal-title" id="acc-modal-title">Create New Account</div>
+    <input type="hidden" id="acc-id"/>
+    <div class="frow"><label>Full Name</label><input type="text" id="acc-name" placeholder="e.g. Priya Sharma"/></div>
+    <div class="form-2">
+      <div class="frow"><label>Email</label><input type="email" id="acc-email" placeholder="user@hostel.com"/></div>
+      <div class="frow"><label>Password</label><input type="password" id="acc-pass" placeholder="min 6 chars"/></div>
+    </div>
+    <div class="form-2">
+      <div class="frow"><label>Role</label>
+        <select id="acc-role" onchange="toggleAccRole()">
+          <option value="staff">Staff</option>
+          <option value="student">Student</option>
+        </select>
+      </div>
+      <div class="frow"><label>Phone</label><input type="tel" id="acc-phone" placeholder="9876543210"/></div>
+    </div>
+    <!-- student-specific -->
+    <div id="acc-student-fields">
+      <div class="form-2">
+        <div class="frow"><label>Room</label><select id="acc-room"><option value="">— None —</option></select></div>
+        <div class="frow"><label>Joining Date</label><input type="date" id="acc-jdate"/></div>
+      </div>
+      <div class="frow"><label>Fee Status</label>
+        <select id="acc-feestatus">
+          <option>Paid</option><option>Pending</option><option>Partial</option>
+        </select>
+      </div>
+    </div>
+    <!-- staff-specific -->
+    <div id="acc-staff-fields">
+      <div class="form-2">
+        <div class="frow"><label>Department</label><input type="text" id="acc-dept" placeholder="e.g. Maintenance"/></div>
+        <div class="frow"><label>Designation</label><input type="text" id="acc-desig" placeholder="e.g. Warden"/></div>
+      </div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal('account')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAccount()">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Student Detail/Edit Modal -->
+<div class="modal-ov" id="modal-student">
+  <div class="modal">
+    <div class="modal-title" id="stu-modal-title">Student Details</div>
+    <input type="hidden" id="s-id"/>
+    <div class="frow"><label>Full Name</label><input type="text" id="s-name" placeholder="Student name"/></div>
+    <div class="form-2">
+      <div class="frow"><label>Phone</label><input type="tel" id="s-phone"/></div>
+      <div class="frow"><label>Email</label><input type="email" id="s-email"/></div>
+    </div>
+    <div class="form-2">
+      <div class="frow"><label>Room</label><select id="s-room"><option value="">— None —</option></select></div>
+      <div class="frow"><label>Joining Date</label><input type="date" id="s-date"/></div>
+    </div>
+    <div class="frow"><label>Fee Status</label>
+      <select id="s-feestatus">
+        <option>Paid</option><option>Pending</option><option>Partial</option>
+      </select>
+    </div>
+    <div class="modal-acts" id="s-acts">
+      <button class="btn btn-ghost" onclick="closeModal('student')">Close</button>
+      <button class="btn btn-primary" id="s-save-btn" onclick="saveStudentEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Room Modal -->
+<div class="modal-ov" id="modal-room">
+  <div class="modal">
+    <div class="modal-title" id="room-modal-title">Add Room</div>
+    <input type="hidden" id="r-id"/>
+    <div class="form-2">
+      <div class="frow"><label>Room Number</label><input type="text" id="r-number" placeholder="e.g. A101"/></div>
+      <div class="frow"><label>Type</label>
+        <select id="r-type"><option>Single</option><option>Double</option><option>Triple</option><option>Dormitory</option></select>
+      </div>
+    </div>
+    <div class="form-2">
+      <div class="frow"><label>Floor</label><input type="number" id="r-floor" placeholder="1" min="0"/></div>
+      <div class="frow"><label>Capacity</label><input type="number" id="r-cap" placeholder="2" min="1"/></div>
+    </div>
+    <div class="form-2">
+      <div class="frow"><label>Monthly Rent (₹)</label><input type="number" id="r-rent" placeholder="4000"/></div>
+      <div class="frow"><label>Status</label>
+        <select id="r-status"><option>Available</option><option>Occupied</option><option>Maintenance</option></select>
+      </div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal('room')">Cancel</button>
+      <button class="btn btn-primary" id="r-save-btn" onclick="saveRoom()">Save Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fee Modal -->
+<div class="modal-ov" id="modal-fee">
+  <div class="modal">
+    <div class="modal-title" id="fee-modal-title">Add Fee Record</div>
+    <input type="hidden" id="f-id"/>
+    <div class="frow"><label>Student</label><select id="f-student"><option value="">— Select —</option></select></div>
+    <div class="form-2">
+      <div class="frow"><label>Amount (₹)</label><input type="number" id="f-amount" placeholder="4000"/></div>
+      <div class="frow"><label>Month</label><input type="month" id="f-month"/></div>
+    </div>
+    <div class="form-2">
+      <div class="frow"><label>Date Paid</label><input type="date" id="f-date"/></div>
+      <div class="frow"><label>Status</label>
+        <select id="f-status"><option>Paid</option><option>Pending</option><option>Partial</option></select>
+      </div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal('fee')">Cancel</button>
+      <button class="btn btn-primary" id="f-save-btn" onclick="saveFee()">Save Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Profile Modal (admin viewing someone) -->
+<div class="modal-ov" id="modal-view">
+  <div class="modal">
+    <div class="modal-title">Account Details</div>
+    <div id="view-content"></div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal('view')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="tdot" id="tdot"></span>
+  <span id="tmsg"></span>
+</div>
+
+<script>
+// ══ INITIAL DATA ══
+const DEFAULT_ADMIN = { id:'admin-001', role:'admin', name:'Admin User', email:'admin@hostel.com', password:'admin123', phone:'9000000001', createdAt: new Date().toISOString() };
+
+function loadDB(k, def) { try { return JSON.parse(localStorage.getItem(k)) || def; } catch { return def; } }
+function saveDB(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+let accounts = loadDB('hms_accounts', [DEFAULT_ADMIN]);
+if (!accounts.find(a => a.id === 'admin-001')) accounts.unshift(DEFAULT_ADMIN);
+
+let rooms   = loadDB('hms_rooms',   []);
+let fees    = loadDB('hms_fees',    []);
+let currentUser = null;
+
+function save() {
+  saveDB('hms_accounts', accounts);
+  saveDB('hms_rooms',    rooms);
+  saveDB('hms_fees',     fees);
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function getStudents() { return accounts.filter(a => a.role === 'student'); }
+function getStaff()    { return accounts.filter(a => a.role === 'staff'); }
+function initials(n)   { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function avaClass(r)   { return r==='admin'?'ava-admin':r==='staff'?'ava-staff':'ava-student'; }
+function roleClass(r)  { return r==='admin'?'rp-admin':r==='staff'?'rp-staff':'rp-student'; }
+
+// ══ ROLE SELECTION (login screen) ══
+let selectedRole = 'admin';
+function selectRole(r, el) {
+  selectedRole = r;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const demos = {
+    admin:   '<strong>Demo — Admin:</strong> admin@hostel.com / admin123',
+    staff:   'Create a staff account via Admin first, then login here.',
+    student: 'Create a student account via Admin first, then login here.'
+  };
+  document.getElementById('login-demo').innerHTML = demos[r];
+}
+
+// ══ LOGIN ══
+function doLogin() {
+  const email = document.getElementById('l-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('l-pass').value;
+  const err   = document.getElementById('l-err');
+  const user  = accounts.find(a => a.email.toLowerCase() === email && a.password === pass && a.role === selectedRole);
+  if (!user) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  setupShell();
+  navigateTo('dashboard');
+}
+
+// ══ LOGOUT ══
+function doLogout() {
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('l-email').value = '';
+  document.getElementById('l-pass').value = '';
+}
+
+// ══ SHELL SETUP ══
+function setupShell() {
+  const u = currentUser;
+  // avatar
+  const ava = document.getElementById('user-ava');
+  ava.textContent = initials(u.name);
+  ava.className = 'ava ' + avaClass(u.role);
+  document.getElementById('user-name-chip').textContent = u.name;
+  document.getElementById('user-role-chip').textContent = u.role;
+  // role pill
+  const rp = document.getElementById('role-pill');
+  const icons = { admin:'🔑', staff:'👔', student:'🎓' };
+  rp.textContent = icons[u.role] + ' ' + u.role.charAt(0).toUpperCase() + u.role.slice(1);
+  rp.className = 'role-pill ' + roleClass(u.role);
+  // nav
+  buildNav();
+}
+
+const NAVS = {
+  admin: [
+    { id:'dashboard', icon:'🏠', label:'Dashboard' },
+    { id:'accounts',  icon:'👥', label:'User Accounts' },
+    { id:'students',  icon:'🎓', label:'Students' },
+    { id:'staff',     icon:'👔', label:'Staff' },
+    { id:'rooms',     icon:'🛏️', label:'Rooms' },
+    { id:'fees',      icon:'💳', label:'Fees' },
+  ],
+  staff: [
+    { id:'dashboard', icon:'🏠', label:'Dashboard' },
+    { id:'students',  icon:'🎓', label:'Students' },
+    { id:'rooms',     icon:'🛏️', label:'Rooms' },
+    { id:'fees',      icon:'💳', label:'Fees' },
+    { id:'profile',   icon:'👤', label:'My Profile' },
+  ],
+  student: [
+    { id:'dashboard', icon:'🏠', label:'Dashboard' },
+    { id:'profile',   icon:'👤', label:'My Profile' },
+    { id:'fees',      icon:'💳', label:'My Fees' },
+  ],
+};
+
+function buildNav() {
+  const nav = document.getElementById('s-nav');
+  nav.innerHTML = '';
+  const items = NAVS[currentUser.role] || [];
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'nav-item';
+    el.id = 'nav-' + item.id;
+    el.innerHTML = `<span class="ni">${item.icon}</span>${item.label}`;
+    el.onclick = () => { navigateTo(item.id); closeSB(); };
+    nav.appendChild(el);
+  });
+}
+
+// ══ NAVIGATION ══
+let currentSection = 'dashboard';
+const pageTitles = { dashboard:'Dashboard', accounts:'User Accounts', students:'Students', staff:'Staff', rooms:'Rooms', fees:'Fees', profile:'My Profile' };
+
+function navigateTo(sec) {
+  currentSection = sec;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('sec-' + sec);
+  if (el) el.classList.add('active');
+  const nav = document.getElementById('nav-' + sec);
+  if (nav) nav.classList.add('active');
+  document.getElementById('page-title').textContent = pageTitles[sec] || sec;
+  refresh();
+}
+
+function openSB()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('sb-ov').classList.add('show'); }
+function closeSB() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-ov').classList.remove('show'); }
+
+// ══ REFRESH ROUTER ══
+function refresh() {
+  const q = (document.getElementById('g-search')?.value || '').toLowerCase();
+  const sec = currentSection;
+  if (sec === 'dashboard') renderDashboard();
+  else if (sec === 'accounts') renderAccounts(q);
+  else if (sec === 'students') renderStudents(q);
+  else if (sec === 'staff')    renderStaff(q);
+  else if (sec === 'rooms')    renderRooms(q);
+  else if (sec === 'fees')     renderFees(q);
+  else if (sec === 'profile')  renderProfile();
+}
+
+// ══ DASHBOARD ══
+function renderDashboard() {
+  const u = currentUser;
+  const students = getStudents();
+  const staff    = getStaff();
+  const avail = rooms.filter(r => r.status === 'Available').length;
+  const occ   = rooms.filter(r => r.status === 'Occupied').length;
+  const pend  = students.filter(s => s.feeStatus === 'Pending').length;
+  const myFees = fees.filter(f => f.studentId === u.id);
+
+  let statsHtml = '';
+  if (u.role === 'admin') {
+    statsHtml = `
+      <div class="stat-card s1"><div class="stat-icon">🎓</div><div class="stat-label">Total Students</div><div class="stat-val">${students.length}</div></div>
+      <div class="stat-card s5"><div class="stat-icon">👔</div><div class="stat-label">Staff Members</div><div class="stat-val">${staff.length}</div></div>
+      <div class="stat-card s2"><div class="stat-icon">🟢</div><div class="stat-label">Available Rooms</div><div class="stat-val">${avail}</div></div>
+      <div class="stat-card s3"><div class="stat-icon">🔴</div><div class="stat-label">Occupied Rooms</div><div class="stat-val">${occ}</div></div>
+      <div class="stat-card s4"><div class="stat-icon">⚠️</div><div class="stat-label">Fees Pending</div><div class="stat-val">${pend}</div></div>`;
+  } else if (u.role === 'staff') {
+    statsHtml = `
+      <div class="stat-card s1"><div class="stat-icon">🎓</div><div class="stat-label">Total Students</div><div class="stat-val">${students.length}</div></div>
+      <div class="stat-card s2"><div class="stat-icon">🟢</div><div class="stat-label">Available Rooms</div><div class="stat-val">${avail}</div></div>
+      <div class="stat-card s3"><div class="stat-icon">🔴</div><div class="stat-label">Occupied Rooms</div><div class="stat-val">${occ}</div></div>
+      <div class="stat-card s4"><div class="stat-icon">⚠️</div><div class="stat-label">Fees Pending</div><div class="stat-val">${pend}</div></div>`;
+  } else {
+    const totalPaid = myFees.filter(f=>f.status==='Paid').reduce((a,f)=>a+(+f.amount||0),0);
+    const totalDue  = myFees.filter(f=>f.status!=='Paid').reduce((a,f)=>a+(+f.amount||0),0);
+    statsHtml = `
+      <div class="stat-card s1"><div class="stat-icon">🛏️</div><div class="stat-label">My Room</div><div class="stat-val" style="font-size:22px">${u.room||'—'}</div></div>
+      <div class="stat-card s2"><div class="stat-icon">💰</div><div class="stat-label">Total Paid</div><div class="stat-val" style="font-size:22px">₹${totalPaid.toLocaleString()}</div></div>
+      <div class="stat-card s3"><div class="stat-icon">⏳</div><div class="stat-label">Amount Due</div><div class="stat-val" style="font-size:22px">₹${totalDue.toLocaleString()}</div></div>
+      <div class="stat-card s4"><div class="stat-icon">📋</div><div class="stat-label">Fee Status</div><div class="stat-val" style="font-size:22px">${u.feeStatus||'—'}</div></div>`;
+  }
+  document.getElementById('dash-stats').innerHTML = statsHtml;
+
+  // quick tables
+  let tablesHtml = '';
+  if (u.role !== 'student') {
+    const recent5s = [...students].slice(-5).reverse();
+    const recent5r = [...rooms].slice(-5).reverse();
+    tablesHtml = `
+      <div class="card">
+        <div class="card-header"><span class="card-title">Recent Students</span></div>
+        <table><thead><tr><th>Name</th><th>Room</th><th>Fees</th></tr></thead><tbody>
+          ${recent5s.length ? recent5s.map(s=>`<tr><td><strong>${s.name}</strong></td><td>${s.room?`<span class="badge bg-blue">${s.room}</span>`:'—'}</td><td>${badgeHtml(s.feeStatus)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">No students yet</td></tr>'}
+        </tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Room Status</span></div>
+        <table><thead><tr><th>Room</th><th>Type</th><th>Status</th></tr></thead><tbody>
+          ${recent5r.length ? recent5r.map(r=>`<tr><td><strong>${r.number}</strong></td><td>${r.type}</td><td>${roomBadge(r.status)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">No rooms yet</td></tr>'}
+        </tbody></table>
+      </div>`;
+  } else {
+    const myFee5 = [...myFees].slice(-5).reverse();
+    tablesHtml = `
+      <div class="card">
+        <div class="card-header"><span class="card-title">My Recent Fee Payments</span></div>
+        <table><thead><tr><th>Month</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody>
+          ${myFee5.length ? myFee5.map(f=>`<tr><td>${f.month||'—'}</td><td>₹${Number(f.amount||0).toLocaleString()}</td><td>${f.date||'—'}</td><td>${badgeHtml(f.status)}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No fee records</td></tr>'}
+        </tbody></table>
+      </div>
+      <div class="card" style="padding:22px">
+        <div class="card-title" style="margin-bottom:14px">My Room Info</div>
+        ${u.room ? `
+          ${(()=>{ const r=rooms.find(x=>x.number===u.room); return r ? `
+            <div class="pc-grid">
+              <div class="pc-field"><div class="pc-flabel">Room No.</div><div class="pc-fval">${r.number}</div></div>
+              <div class="pc-field"><div class="pc-flabel">Type</div><div class="pc-fval">${r.type}</div></div>
+              <div class="pc-field"><div class="pc-flabel">Floor</div><div class="pc-fval">Floor ${r.floor||0}</div></div>
+              <div class="pc-field"><div class="pc-flabel">Monthly Rent</div><div class="pc-fval">₹${Number(r.rent||0).toLocaleString()}</div></div>
+            </div>` : `<p style="color:var(--muted);font-size:13px">Room details not found.</p>`; })()}` 
+          : `<p style="color:var(--muted);font-size:13px">No room assigned yet.</p>`}
+      </div>`;
+  }
+  document.getElementById('dash-tables').innerHTML = tablesHtml;
+}
+
+// ══ ACCOUNTS ══
+function renderAccounts(q='') {
+  const list = accounts.filter(a => a.role !== 'admin' &&
+    (!q || a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q) || (a.role||'').includes(q)));
+  const grid  = document.getElementById('acc-grid');
+  const empty = document.getElementById('acc-empty');
+  if (!list.length) { grid.innerHTML=''; empty.style.display=''; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(a => `
+    <div class="acc-card">
+      <div class="acc-top">
+        <div class="acc-ava ${avaClass(a.role)}">${initials(a.name)}</div>
+        <div>
+          <div class="acc-name">${a.name}</div>
+          <div class="acc-email">${a.email}</div>
+        </div>
+      </div>
+      <div class="acc-meta">
+        <span class="badge ${a.role==='staff'?'bg-blue':'bg-green'}">${a.role}</span>
+        ${a.role==='student'?`<span class="badge ${feeBadgeClass(a.feeStatus)}">${a.feeStatus||'—'}</span>`:''}
+        ${a.room?`<span class="badge bg-purple">Room ${a.room}</span>`:''}
+        ${a.dept?`<span class="badge bg-gray">${a.dept}</span>`:''}
+      </div>
+      <div class="acc-actions">
+        <button class="btn btn-sm btn-ghost" onclick="viewAccount('${a.id}')">👁 View</button>
+        <button class="btn btn-sm btn-warn" onclick="editAccount('${a.id}')">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteAccount('${a.id}')">🗑 Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function viewAccount(id) {
+  const a = accounts.find(x=>x.id===id); if(!a) return;
+  let html = `<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+    <div class="ava ${avaClass(a.role)}" style="width:52px;height:52px;font-size:18px">${initials(a.name)}</div>
+    <div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700">${a.name}</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:2px;text-transform:capitalize">${a.role}</div></div></div>
+    <div class="pc-grid">
+      <div class="pc-field"><div class="pc-flabel">Email</div><div class="pc-fval" style="font-size:13px">${a.email}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Phone</div><div class="pc-fval">${a.phone||'—'}</div></div>`;
+  if (a.role==='student') html += `
+      <div class="pc-field"><div class="pc-flabel">Room</div><div class="pc-fval">${a.room||'Not assigned'}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Joining Date</div><div class="pc-fval">${a.jdate||'—'}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Fee Status</div><div class="pc-fval">${badgeHtml(a.feeStatus)}</div></div>`;
+  if (a.role==='staff') html += `
+      <div class="pc-field"><div class="pc-flabel">Department</div><div class="pc-fval">${a.dept||'—'}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Designation</div><div class="pc-fval">${a.desig||'—'}</div></div>`;
+  html += `</div>`;
+  document.getElementById('view-content').innerHTML = html;
+  document.getElementById('modal-view').classList.add('open');
+}
+
+function openModal(type) {
+  if (type === 'account') {
+    document.getElementById('acc-modal-title').textContent = 'Create New Account';
+    document.getElementById('acc-id').value='';
+    ['acc-name','acc-email','acc-pass','acc-phone','acc-dept','acc-desig'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('acc-role').value='staff';
+    document.getElementById('acc-jdate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('acc-feestatus').value='Pending';
+    populateDropdown('acc-room', rooms.map(r=>({v:r.number,l:`${r.number} (${r.type})`})), '');
+    toggleAccRole();
+  } else if (type === 'room') {
+    document.getElementById('room-modal-title').textContent='Add Room';
+    document.getElementById('r-id').value='';
+    ['r-number','r-floor','r-cap','r-rent'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('r-type').value='Single';
+    document.getElementById('r-status').value='Available';
+    document.getElementById('r-save-btn').style.display='';
+  } else if (type === 'fee') {
+    document.getElementById('fee-modal-title').textContent='Add Fee Record';
+    document.getElementById('f-id').value='';
+    document.getElementById('f-amount').value='';
+    document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
+    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('f-status').value='Paid';
+    populateDropdown('f-student', getStudents().map(s=>({v:s.id,l:s.name})), '');
+    document.getElementById('f-save-btn').style.display='';
+  }
+  document.getElementById('modal-' + type).classList.add('open');
+}
+
+function closeModal(type) { document.getElementById('modal-' + type).classList.remove('open'); }
+
+function toggleAccRole() {
+  const r = document.getElementById('acc-role').value;
+  document.getElementById('acc-student-fields').style.display = r==='student'?'':'none';
+  document.getElementById('acc-staff-fields').style.display   = r==='staff'?'':'none';
+}
+
+function populateDropdown(id, opts, selected) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<option value="">— None —</option>' + opts.map(o=>`<option value="${o.v}" ${o.v===selected?'selected':''}>${o.l}</option>`).join('');
+}
+
+function saveAccount() {
+  const name  = document.getElementById('acc-name').value.trim();
+  const email = document.getElementById('acc-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('acc-pass').value;
+  const role  = document.getElementById('acc-role').value;
+  const id    = document.getElementById('acc-id').value;
+  if (!name)  { toast('Name is required','warn'); return; }
+  if (!email) { toast('Email is required','warn'); return; }
+  if (!id && !pass) { toast('Password is required','warn'); return; }
+  if (!id && accounts.find(a=>a.email.toLowerCase()===email)) { toast('Email already exists','warn'); return; }
+  const data = {
+    name, email, role,
+    phone:      document.getElementById('acc-phone').value.trim(),
+    password:   pass || (id ? accounts.find(a=>a.id===id)?.password : ''),
+    room:       role==='student'?document.getElementById('acc-room').value:'',
+    jdate:      role==='student'?document.getElementById('acc-jdate').value:'',
+    feeStatus:  role==='student'?document.getElementById('acc-feestatus').value:'',
+    dept:       role==='staff'?document.getElementById('acc-dept').value.trim():'',
+    desig:      role==='staff'?document.getElementById('acc-desig').value.trim():'',
+  };
+  if (id) {
+    const idx = accounts.findIndex(a=>a.id===id);
+    accounts[idx] = {...accounts[idx], ...data};
+    toast('Account updated ✓','success');
+  } else {
+    accounts.push({id:uid(), createdAt:new Date().toISOString(), ...data});
+    toast('Account created ✓','success');
+  }
+  save(); closeModal('account'); refresh();
+}
+
+function editAccount(id) {
+  const a = accounts.find(x=>x.id===id); if(!a) return;
+  document.getElementById('acc-modal-title').textContent='Edit Account';
+  document.getElementById('acc-id').value    = a.id;
+  document.getElementById('acc-name').value  = a.name;
+  document.getElementById('acc-email').value = a.email;
+  document.getElementById('acc-pass').value  = '';
+  document.getElementById('acc-role').value  = a.role;
+  document.getElementById('acc-phone').value = a.phone||'';
+  document.getElementById('acc-dept').value  = a.dept||'';
+  document.getElementById('acc-desig').value = a.desig||'';
+  document.getElementById('acc-jdate').value = a.jdate||'';
+  document.getElementById('acc-feestatus').value = a.feeStatus||'Pending';
+  populateDropdown('acc-room', rooms.map(r=>({v:r.number,l:`${r.number} (${r.type})`})), a.room||'');
+  toggleAccRole();
+  document.getElementById('modal-account').classList.add('open');
+}
+
+function deleteAccount(id) {
+  if (!confirm('Delete this account permanently?')) return;
+  accounts = accounts.filter(a=>a.id!==id);
+  save(); refresh(); toast('Account deleted','danger');
+}
+
+// ══ STUDENTS TABLE ══
+function renderStudents(q='') {
+  const isAdmin   = currentUser.role==='admin';
+  const isStaff   = currentUser.role==='staff';
+  const canEdit   = isAdmin;
+  const canStatus = isStaff; // staff can update fee status only
+
+  if (isAdmin) document.getElementById('btn-add-student').style.display='';
+
+  const list = getStudents().filter(s =>
+    !q || s.name.toLowerCase().includes(q) || (s.room||'').toLowerCase().includes(q) || (s.phone||'').includes(q));
+  document.getElementById('student-cnt').textContent = list.length;
+  const tbody = document.getElementById('student-table');
+  const empty = document.getElementById('student-empty');
+  if (!list.length) { tbody.innerHTML=''; empty.style.display=''; return; }
+  empty.style.display='none';
+  tbody.innerHTML = list.map((s,i) => `
+    <tr>
+      <td><span style="color:var(--muted);font-size:11px">#${String(i+1).padStart(3,'0')}</span></td>
+      <td><strong>${s.name}</strong><br><span style="color:var(--muted);font-size:11px">${s.email}</span></td>
+      <td>${s.phone||'—'}</td>
+      <td>${s.room?`<span class="badge bg-purple">${s.room}</span>`:'—'}</td>
+      <td>${s.jdate||'—'}</td>
+      <td>${badgeHtml(s.feeStatus)}</td>
+      <td>
+        <div class="abx">
+          ${canEdit ? `<button class="ab ab-edit" onclick="openStudentEdit('${s.id}')">✏️ Edit</button>
+                       <button class="ab ab-del"  onclick="deleteAcc('${s.id}')">🗑</button>` : ''}
+          ${canStatus ? `<button class="ab ab-status" onclick="toggleFeeStatus('${s.id}')">💳 Fee</button>` : ''}
+          ${(!canEdit && !canStatus) ? `<button class="ab ab-view" onclick="viewAccount('${s.id}')">👁 View</button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function toggleFeeStatus(id) {
+  // staff can cycle fee status
+  const a = accounts.find(x=>x.id===id); if(!a) return;
+  const cycle = ['Pending','Partial','Paid'];
+  const next = cycle[(cycle.indexOf(a.feeStatus)+1)%cycle.length];
+  a.feeStatus = next;
+  save(); refresh(); toast(`Fee status → ${next}`,'success');
+}
+
+function openStudentEdit(id) {
+  const s = accounts.find(x=>x.id===id); if(!s) return;
+  document.getElementById('stu-modal-title').textContent='Edit Student';
+  document.getElementById('s-id').value=s.id;
+  document.getElementById('s-name').value=s.name;
+  document.getElementById('s-phone').value=s.phone||'';
+  document.getElementById('s-email').value=s.email;
+  document.getElementById('s-date').value=s.jdate||'';
+  document.getElementById('s-feestatus').value=s.feeStatus||'Pending';
+  populateDropdown('s-room', rooms.map(r=>({v:r.number,l:`${r.number} (${r.type})`})), s.room||'');
+  document.getElementById('modal-student').classList.add('open');
+}
+
+function saveStudentEdit() {
+  const id = document.getElementById('s-id').value;
+  const idx = accounts.findIndex(a=>a.id===id); if(idx<0) return;
+  accounts[idx] = {...accounts[idx],
+    name:      document.getElementById('s-name').value.trim(),
+    phone:     document.getElementById('s-phone').value.trim(),
+    email:     document.getElementById('s-email').value.trim(),
+    jdate:     document.getElementById('s-date').value,
+    room:      document.getElementById('s-room').value,
+    feeStatus: document.getElementById('s-feestatus').value,
+  };
+  save(); closeModal('student'); refresh(); toast('Student updated ✓','success');
+}
+
+function deleteAcc(id) {
+  if(!confirm('Delete this account?')) return;
+  accounts = accounts.filter(a=>a.id!==id);
+  save(); refresh(); toast('Deleted','danger');
+}
+
+// ══ STAFF TABLE ══
+function renderStaff(q='') {
+  const list = getStaff().filter(s => !q || s.name.toLowerCase().includes(q) || (s.dept||'').toLowerCase().includes(q));
+  document.getElementById('staff-cnt').textContent=list.length;
+  const tbody=document.getElementById('staff-table');
+  const empty=document.getElementById('staff-empty');
+  if(!list.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=list.map((s,i)=>`
+    <tr>
+      <td><span style="color:var(--muted);font-size:11px">#${String(i+1).padStart(3,'0')}</span></td>
+      <td><strong>${s.name}</strong><br><span style="color:var(--muted);font-size:11px">${s.desig||'—'}</span></td>
+      <td>${s.email}</td>
+      <td>${s.phone||'—'}</td>
+      <td>${s.dept||'—'}</td>
+      <td><span class="badge bg-green">Active</span></td>
+    </tr>`).join('');
+}
+
+// ══ ROOMS ══
+function renderRooms(q='') {
+  const isAdmin = currentUser.role==='admin';
+  const isStaff = currentUser.role==='staff';
+  if (isAdmin) document.getElementById('btn-add-room').style.display='';
+
+  const list = rooms.filter(r => !q || r.number.toLowerCase().includes(q) || r.type.toLowerCase().includes(q));
+  document.getElementById('room-cnt').textContent=list.length;
+  const tbody=document.getElementById('room-table');
+  const empty=document.getElementById('room-empty');
+  if(!list.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=list.map(r=>`
+    <tr>
+      <td><strong>${r.number}</strong></td>
+      <td>${r.type}</td>
+      <td>Floor ${r.floor||0}</td>
+      <td>${r.capacity||1}</td>
+      <td>${studentsInRoom(r.number)}</td>
+      <td>₹${Number(r.rent||0).toLocaleString()}</td>
+      <td>${roomBadge(r.status)}</td>
+      <td>
+        <div class="abx">
+          ${isAdmin ? `<button class="ab ab-edit" onclick="editRoom('${r.id}')">✏️</button>
+                       <button class="ab ab-del"  onclick="deleteRoom('${r.id}')">🗑</button>` : ''}
+          ${isStaff ? `<button class="ab ab-status" onclick="cycleRoomStatus('${r.id}')">🔄 Status</button>` : ''}
+          ${currentUser.role==='student' ? '' : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function studentsInRoom(num) { return getStudents().filter(s=>s.room===num).length; }
+
+function cycleRoomStatus(id) {
+  const r=rooms.find(x=>x.id===id); if(!r) return;
+  const cycle=['Available','Occupied','Maintenance'];
+  r.status=cycle[(cycle.indexOf(r.status)+1)%cycle.length];
+  save(); refresh(); toast(`Room ${r.number} → ${r.status}`,'success');
+}
+
+function saveRoom() {
+  const num=document.getElementById('r-number').value.trim();
+  if(!num){toast('Enter room number','warn');return;}
+  const id=document.getElementById('r-id').value;
+  const data={number:num,type:document.getElementById('r-type').value,
+    floor:document.getElementById('r-floor').value,
+    capacity:document.getElementById('r-cap').value,
+    rent:document.getElementById('r-rent').value,
+    status:document.getElementById('r-status').value};
+  if(id){
+    const idx=rooms.findIndex(r=>r.id===id);
+    rooms[idx]={...rooms[idx],...data};
+    toast('Room updated ✓','success');
+  } else {
+    if(rooms.find(r=>r.number===num)){toast('Room number exists','warn');return;}
+    rooms.push({id:uid(),...data});
+    toast('Room added ✓','success');
+  }
+  save(); closeModal('room'); refresh();
+}
+
+function editRoom(id) {
+  const r=rooms.find(x=>x.id===id); if(!r) return;
+  document.getElementById('room-modal-title').textContent='Edit Room';
+  document.getElementById('r-id').value=r.id;
+  document.getElementById('r-number').value=r.number;
+  document.getElementById('r-type').value=r.type;
+  document.getElementById('r-floor').value=r.floor||'';
+  document.getElementById('r-cap').value=r.capacity||'';
+  document.getElementById('r-rent').value=r.rent||'';
+  document.getElementById('r-status').value=r.status;
+  document.getElementById('modal-room').classList.add('open');
+}
+
+function deleteRoom(id) {
+  if(!confirm('Delete this room?'))return;
+  rooms=rooms.filter(r=>r.id!==id);
+  save(); refresh(); toast('Room removed','danger');
+}
+
+// ══ FEES ══
+function renderFees(q='') {
+  const u=currentUser;
+  const isAdmin=u.role==='admin';
+  const isStaff=u.role==='staff';
+  if(isAdmin||isStaff) document.getElementById('btn-add-fee').style.display = isAdmin?'':'none';
+
+  let list = fees;
+  if(u.role==='student') list=fees.filter(f=>f.studentId===u.id);
+  if(q) {
+    list=list.filter(f=>{
+      const s=accounts.find(a=>a.id===f.studentId);
+      return s && s.name.toLowerCase().includes(q);
+    });
+  }
+
+  const paid=list.filter(f=>f.status==='Paid');
+  const unpaid=list.filter(f=>f.status!=='Paid');
+  document.getElementById('fee-summary').innerHTML=`
+    <div class="card" style="padding:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Collected</div>
+      <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--green)">₹${paid.reduce((a,f)=>a+(+f.amount||0),0).toLocaleString()}</div>
+    </div>
+    <div class="card" style="padding:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pending Amount</div>
+      <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--red)">₹${unpaid.reduce((a,f)=>a+(+f.amount||0),0).toLocaleString()}</div>
+    </div>`;
+
+  const tbody=document.getElementById('fee-table');
+  const empty=document.getElementById('fee-empty');
+  if(!list.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=list.map(f=>{
+    const s=accounts.find(a=>a.id===f.studentId);
+    return `<tr>
+      <td>${s?`<strong>${s.name}</strong>`:'<span style="color:var(--muted)">Unknown</span>'}</td>
+      <td>${s&&s.room?`<span class="badge bg-purple">${s.room}</span>`:'—'}</td>
+      <td><strong>₹${Number(f.amount||0).toLocaleString()}</strong></td>
+      <td>${f.month||'—'}</td>
+      <td>${f.date||'—'}</td>
+      <td>${badgeHtml(f.status)}</td>
+      <td>
+        <div class="abx">
+          ${isAdmin?`<button class="ab ab-edit" onclick="editFee('${f.id}')">✏️</button>
+                     <button class="ab ab-del"  onclick="deleteFee('${f.id}')">🗑</button>`:''}
+          ${isStaff?`<button class="ab ab-status" onclick="cycleFeeStatus('${f.id}')">💳 Status</button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function cycleFeeStatus(id) {
+  const f=fees.find(x=>x.id===id); if(!f) return;
+  const cycle=['Pending','Partial','Paid'];
+  f.status=cycle[(cycle.indexOf(f.status)+1)%cycle.length];
+  save(); refresh(); toast(`Fee status → ${f.status}`,'success');
+}
+
+function saveFee() {
+  const sid=document.getElementById('f-student').value;
+  if(!sid){toast('Select a student','warn');return;}
+  const id=document.getElementById('f-id').value;
+  const data={studentId:sid,amount:document.getElementById('f-amount').value,
+    month:document.getElementById('f-month').value,
+    date:document.getElementById('f-date').value,
+    status:document.getElementById('f-status').value};
+  if(id){
+    const idx=fees.findIndex(f=>f.id===id);
+    fees[idx]={...fees[idx],...data};
+    toast('Fee record updated ✓','success');
+  } else {
+    fees.push({id:uid(),...data});
+    toast('Fee record added ✓','success');
+  }
+  // update student feeStatus
+  const acc=accounts.find(a=>a.id===sid);
+  if(acc) acc.feeStatus=data.status;
+  save(); closeModal('fee'); refresh();
+}
+
+function editFee(id) {
+  const f=fees.find(x=>x.id===id); if(!f) return;
+  document.getElementById('fee-modal-title').textContent='Edit Fee Record';
+  document.getElementById('f-id').value=f.id;
+  document.getElementById('f-amount').value=f.amount||'';
+  document.getElementById('f-month').value=f.month||'';
+  document.getElementById('f-date').value=f.date||'';
+  document.getElementById('f-status').value=f.status;
+  populateDropdown('f-student',getStudents().map(s=>({v:s.id,l:s.name})),f.studentId);
+  document.getElementById('modal-fee').classList.add('open');
+}
+
+function deleteFee(id) {
+  if(!confirm('Delete this fee record?'))return;
+  fees=fees.filter(f=>f.id!==id);
+  save(); refresh(); toast('Deleted','danger');
+}
+
+// ══ PROFILE ══
+function renderProfile() {
+  const u=currentUser;
+  const myFees=fees.filter(f=>f.studentId===u.id);
+  let html=`<div class="profile-card">
+    <div class="pc-header">
+      <div class="pc-ava ${avaClass(u.role)}" style="font-size:26px;font-weight:700">${initials(u.name)}</div>
+      <div>
+        <div class="pc-name">${u.name}</div>
+        <div class="pc-role">${u.role} Account</div>
+      </div>
+    </div>
+    <div class="notice notice-info" style="margin-bottom:16px">ℹ️ Contact the Admin to update your profile details.</div>
+    <div class="pc-grid">
+      <div class="pc-field"><div class="pc-flabel">Email</div><div class="pc-fval" style="font-size:13px">${u.email}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Phone</div><div class="pc-fval">${u.phone||'—'}</div></div>`;
+  if(u.role==='student') html+=`
+      <div class="pc-field"><div class="pc-flabel">Room</div><div class="pc-fval">${u.room||'Not assigned'}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Joining Date</div><div class="pc-fval">${u.jdate||'—'}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Fee Status</div><div class="pc-fval">${badgeHtml(u.feeStatus)}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Total Fees Paid</div><div class="pc-fval" style="color:var(--green)">₹${myFees.filter(f=>f.status==='Paid').reduce((a,f)=>a+(+f.amount||0),0).toLocaleString()}</div></div>`;
+  if(u.role==='staff') html+=`
+      <div class="pc-field"><div class="pc-flabel">Department</div><div class="pc-fval">${u.dept||'—'}</div></div>
+      <div class="pc-field"><div class="pc-flabel">Designation</div><div class="pc-fval">${u.desig||'—'}</div></div>`;
+  html+=`</div></div>`;
+  document.getElementById('profile-content').innerHTML=html;
+}
+
+// ══ HELPERS ══
+function badgeHtml(s) {
+  return `<span class="badge ${feeBadgeClass(s)}">${s||'—'}</span>`;
+}
+function feeBadgeClass(s) {
+  return s==='Paid'?'bg-green':s==='Pending'?'bg-red':'bg-yellow';
+}
+function roomBadge(s) {
+  return `<span class="badge ${s==='Available'?'bg-green':s==='Occupied'?'bg-red':'bg-yellow'}">${s}</span>`;
+}
+
+// ══ CLOSE MODALS ON OUTSIDE CLICK ══
+['account','student','room','fee','view'].forEach(t=>{
+  document.getElementById('modal-'+t).addEventListener('click',function(e){
+    if(e.target===this) closeModal(t);
+  });
+});
+
+// ══ TOAST ══
+let tTimer;
+function toast(msg,type='success'){
+  const el=document.getElementById('toast');
+  const dot=document.getElementById('tdot');
+  const txt=document.getElementById('tmsg');
+  const cols={success:'var(--green)',danger:'var(--red)',warn:'var(--yellow)'};
+  dot.style.background=cols[type]||cols.success;
+  txt.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ══ SEED DEMO DATA ══
+if (!rooms.length) {
+  rooms=[
+    {id:uid(),number:'A101',type:'Single',floor:'1',capacity:'1',rent:'4500',status:'Occupied'},
+    {id:uid(),number:'A102',type:'Double',floor:'1',capacity:'2',rent:'3200',status:'Available'},
+    {id:uid(),number:'B201',type:'Double',floor:'2',capacity:'2',rent:'3500',status:'Occupied'},
+    {id:uid(),number:'B202',type:'Triple',floor:'2',capacity:'3',rent:'2800',status:'Available'},
+    {id:uid(),number:'C301',type:'Dormitory',floor:'3',capacity:'6',rent:'1800',status:'Maintenance'},
+  ];
+  saveDB('hms_rooms',rooms);
+}
+if (accounts.length === 1) {
+  // seed demo staff + students
+  const s1={id:uid(),role:'staff',name:'Meera Nair',email:'staff@hostel.com',password:'staff123',phone:'9111222333',dept:'Maintenance',desig:'Warden',createdAt:new Date().toISOString()};
+  const st1={id:uid(),role:'student',name:'Aryan Kapoor',email:'student@hostel.com',password:'student123',phone:'9876543210',room:'A101',jdate:'2024-07-01',feeStatus:'Paid',createdAt:new Date().toISOString()};
+  const st2={id:uid(),role:'student',name:'Priya Mehta',email:'priya@hostel.com',password:'priya123',phone:'9123456789',room:'B201',jdate:'2024-08-01',feeStatus:'Pending',createdAt:new Date().toISOString()};
+  accounts.push(s1,st1,st2);
+  fees=[
+    {id:uid(),studentId:st1.id,amount:'4500',month:'2024-09',date:'2024-09-01',status:'Paid'},
+    {id:uid(),studentId:st2.id,amount:'3500',month:'2024-09',date:'',status:'Pending'},
+  ];
+  save();
+}
+</script>
+</body>
+</html>
